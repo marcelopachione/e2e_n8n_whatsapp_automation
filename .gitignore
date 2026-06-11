@@ -1,5 +1,6 @@
 # ── Environment & secrets ──────────────────────────────────────────────────────
 .env
+config/Envs
 
 # ── Docker runtime data ────────────────────────────────────────────────────────
 build/postgres/data/

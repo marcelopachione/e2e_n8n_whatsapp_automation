@@ -15,6 +15,7 @@ SERVICES=(
     "postgres"
     "redis"
     "n8n"
+    "pgadmin"
 )
 
 COMPOSE_FILE="$(dirname "$0")/build/docker-compose.yml"

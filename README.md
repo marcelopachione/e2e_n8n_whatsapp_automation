@@ -17,6 +17,7 @@ Think of it like building your own version of Zapier or Make — but running ent
 | **n8n** | Runs your automation workflows | The brain |
 | **PostgreSQL** | Stores all workflow data and history | The filing cabinet |
 | **Redis** | Queues jobs so nothing gets lost | The waiting room |
+| **pgAdmin** | A web page to look inside the database | A window into the filing cabinet |
 | **Docker** | Runs everything in neat, isolated boxes | The Lego base plate |
 
 ---
@@ -77,6 +78,15 @@ POSTGRES_PASSWORD=your-strong-password-here
 DB_POSTGRESDB_PASSWORD=your-strong-password-here
 ```
 
+#### Set your pgAdmin login (optional)
+
+pgAdmin is a web page for looking inside the database. By default it logs in with `admin@example.com` / `change_me`. Update these to your own values:
+
+```dotenv
+PGADMIN_DEFAULT_EMAIL=you@example.com
+PGADMIN_DEFAULT_PASSWORD=your-strong-password-here
+```
+
 #### Generate a secret encryption key
 
 n8n uses this key to protect your saved credentials. Generate one by running:
@@ -135,6 +145,8 @@ That is it. n8n will be available at **http://localhost:5678** in your browser.
     ├── docker-compose.yml      # Defines all services and how they connect
     ├── n8n/
     │   └── local-files/        # Files placed here are accessible inside n8n at /files
+    ├── pgadmin/
+    │   └── servers.json        # Pre-configures the connection to the postgres database
     ├── postgres/
     │   └── init/               # SQL scripts here run automatically when the database is created
     └── redis/
@@ -189,6 +201,20 @@ The first time you open it, n8n will ask you to create an account. This account 
 
 ---
 
+## Accessing pgAdmin
+
+pgAdmin lets you look inside the PostgreSQL database using a web page. Once the services are running, open your browser and go to:
+
+```
+http://localhost:5050
+```
+
+Log in using the email and password you set in `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`.
+
+A connection to the database (called **n8n Postgres**) is already set up for you. The first time you open it, pgAdmin will ask for the database password — this is the value you set in `POSTGRES_PASSWORD`.
+
+---
+
 ## Troubleshooting
 
 **The script says `docker not found`**
@@ -196,6 +222,9 @@ Install Docker Desktop and make sure it is running before trying again.
 
 **n8n does not open in the browser**
 Wait 30 seconds after starting the services — n8n waits for PostgreSQL and Redis to be fully ready before it starts.
+
+**pgAdmin asks for a "master password"**
+This is a separate password used only by pgAdmin itself, not your database password. You can set any password you like — it is just used to encrypt saved connection details on your machine.
 
 **I lost my encryption key**
 Unfortunately there is no way to recover it. You will need to reset n8n by running `down -v` and starting again from Step 2.
