@@ -140,11 +140,14 @@ That is it. n8n will be available at **http://localhost:5678** in your browser.
 ├── .env                        # Your configuration (passwords, keys, settings)
 ├── start_services.sh           # Interactive startup script (requires Bash / WSL2)
 ├── stop_services.sh            # Interactive shutdown script (requires Bash / WSL2)
+├── export_workflows.sh         # Saves a copy of all your n8n workflows as JSON files
 ├── README.md                   # This file
 └── build/
     ├── docker-compose.yml      # Defines all services and how they connect
     ├── n8n/
-    │   └── local-files/        # Files placed here are accessible inside n8n at /files
+    │   ├── local-files/        # Files placed here are accessible inside n8n at /files
+    │   ├── redact_workflow.js  # Masks secrets in workflows, run inside the n8n container
+    │   └── workflows_backup/   # JSON copies of your workflows, created by export_workflows.sh
     ├── pgadmin/
     │   └── servers.json        # Pre-configures the connection to the postgres database
     ├── postgres/
@@ -172,6 +175,28 @@ A menu will appear. Choose a number to start a specific service, or press `a` to
 ```
 
 The same menu style — choose a service to stop individually, or press `a` to stop everything.
+
+### Back up your workflows
+
+```bash
+./export_workflows.sh --all      # every workflow, including archived ones
+./export_workflows.sh --active   # only workflows that are not archived
+```
+
+Saves a JSON copy of your workflows into `build/n8n/workflows_backup/`, one file per workflow, named after the workflow itself (e.g. `My workflow.json`). Run this whenever you want to save your progress, then commit the folder to git so your workflows are backed up.
+
+**Sensitive values are masked automatically, inside the n8n container.** If a workflow has API keys, tokens, passwords, names, emails, phone numbers or other personal/company details typed directly into it, a small script runs inside the n8n container and replaces them with `*******` before the files ever reach your computer — so it is safe to commit the result to GitHub. The script also masks the workflow owner's name and email (the `project.name (workflow owner)` field n8n adds automatically). The script prints the name of every masked field, e.g.:
+
+```
+⚠ Masked sensitive value(s) in 'My workflow.json':
+    - cal_api_key
+    - profissional_nome
+    - profissional_email
+    - project.name (workflow owner)
+    - 1 additional value(s) matched known secret formats
+```
+
+> **Restoring after re-import:** open the workflow's JSON file and search for `*******` — each one sits next to its original field name (e.g. `"name": "cal_api_key", "value": "*******"`), so you know exactly which value to paste back in after importing it into n8n. The `project.name (workflow owner)` field is the exception — it is just ownership metadata, n8n reassigns it automatically on import, so it does not need to be restored.
 
 ### Delete all data (full reset)
 

@@ -1,0 +1,362 @@
+{
+  "updatedAt": "2026-06-11T14:39:56.436Z",
+  "createdAt": "2026-06-10T15:21:28.432Z",
+  "id": "i71TmyzIQpim9mHu",
+  "name": "n8n_whatsapp_automation",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -528,
+        -416
+      ],
+      "id": "1384e140-be49-4f12-9348-a18894908981",
+      "name": "When chat message received",
+      "webhookId": "6c3e0d4e-a0c1-4dc2-ae95-581d23cebf26"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o assistente de agendamento de {{ $('Config Cal.com').item.json.profissional_nome }}, especialista em {{ $('Config Cal.com').item.json.profissional_nicho }}.\nSeu papel é ajudar o cliente a consultar horários, criar, reagendar e cancelar {{ $('Config Cal.com').item.json.profissional_servico }}s de forma clara, cordial e eficiente.\nResponda sempre no mesmo idioma que o cliente usar.\n\nCONTEXTO DINÂMICO\nProfissional: {{ $('Config Cal.com').item.json.profissional_nome }}\nNicho: {{ $('Config Cal.com').item.json.profissional_nicho }}\nServiço: {{ $('Config Cal.com').item.json.profissional_servico }}\nContato: {{ $('Config Cal.com').item.json.profissional_email }}\n\nOBJETIVO\nConduzir o cliente do primeiro contato até a confirmação do {{ $('Config Cal.com').item.json.profissional_servico }}, cancelamento ou reagendamento com o menor número de perguntas possível.\nNunca invente informações.\nNunca execute ações irreversíveis sem confirmação explícita do cliente.\n\nESTRUTURA DAS MENSAGENS\nResponda sempre em parágrafos curtos, com no máximo 1 a 2 linhas.\nApós cada ponto final, exclamação ou interrogação, inicie um novo parágrafo.\nUse duas quebras de linha entre cada parágrafo.\nNão envie blocos grandes de texto.\nNunca faça mais de uma pergunta por vez.\n\nFORMATAÇÃO DAS RESPOSTAS\nA formatação Markdown não é aceita.\nÉ proibido usar negrito com asteriscos.\nÉ proibido usar títulos com hashtag.\nÉ proibido usar listas com marcadores automáticos.\nÉ proibido usar links com texto âncora.\nÉ proibido usar emojis de qualquer tipo.\nApresente horários no formato simples, como 09h00 e 14h30.\n\nDATAS DINÂMICAS\nHoje é: {{ $today.setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\nAmanhã é: {{ $today.plus({ days: 1 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\nPróximos dias:\n{{ $today.plus({ days: 2 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 3 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 4 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 5 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 6 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 7 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n{{ $today.plus({ days: 8 }).setLocale('pt-BR').toFormat(\"cccc, dd/MM/yyyy\") }}\n\nFLUXO DE ATENDIMENTO INICIAL\nApresente-se como assistente de {{ $('Config Cal.com').item.json.profissional_nome }} e pergunte o nome do cliente.\nApós saber o nome, pergunte o que o cliente precisa.\nSomente depois que o cliente confirmar que deseja agendar, chame a ferramenta Disponibilidade.\n\nFLUXO PARA NOVO AGENDAMENTO\nEntenda o pedido do cliente.\nChame a ferramenta Disponibilidade para o período solicitado.\nApresente somente 2 horários disponíveis, sendo 1 pela manhã e 1 pela tarde, selecionados aleatoriamente.\nSe o cliente não gostar dos horários sugeridos, ofereça mais 2 opções.\nConfirme o horário escolhido pelo cliente.\nColete nome completo, e-mail e telefone com DDD, caso ainda não tenha esses dados.\nColete apenas um dado por vez.\nConfirme todos os dados com o cliente antes de agendar.\nApós a confirmação explícita do cliente, chame a ferramenta Agendar.\nDepois de agendar, confirme o {{ $('Config Cal.com').item.json.profissional_servico }} em linguagem natural.\n\nFLUXO PARA REAGENDAMENTO\nColete o e-mail do cliente, caso ainda não tenha.\nChame a ferramenta Buscar BookingUID.\nConfirme qual {{ $('Config Cal.com').item.json.profissional_servico }} o cliente deseja alterar.\nChame a ferramenta Disponibilidade para o novo período desejado.\nApresente somente 2 horários disponíveis, sendo 1 pela manhã e 1 pela tarde, selecionados aleatoriamente.\nConfirme o novo horário com o cliente.\nApós a confirmação explícita do cliente, chame a ferramenta Reagendar.\nDepois de reagendar, confirme o novo horário em linguagem natural.\n\nFLUXO PARA CANCELAMENTO\nColete o e-mail do cliente, caso ainda não tenha.\nChame a ferramenta Buscar BookingUID.\nConfirme qual {{ $('Config Cal.com').item.json.profissional_servico }} o cliente deseja cancelar.\nApós a confirmação explícita do cliente, chame a ferramenta Cancelar.\nDepois de cancelar, confirme o cancelamento em linguagem natural.\n\nFERRAMENTA DISPONIBILIDADE\nUse quando o cliente perguntar por horários livres, dias disponíveis ou quiser saber quando tem vaga.\nPreencha start e end com datas no formato YYYY-MM-DD inferidas da mensagem do cliente.\nO retorno será uma lista de slots disponíveis por dia.\nSe o retorno estiver vazio, informe educadamente que não há horários no período solicitado e ofereça buscar outro período.\nNunca use esta ferramenta para criar, reagendar ou cancelar.\n\nFERRAMENTA AGENDAR\nUse somente quando o cliente confirmar o horário desejado e você já tiver nome completo, e-mail e telefone com DDD, se o telefone for necessário no fluxo.\nPreencha start em UTC ISO 8601.\nConverta sempre o horário considerando o fuso America/Sao_Paulo como UTC-3.\nExemplo: 15h00 em Brasília deve ser enviado como 18:00:00Z.\nO campo start deve ser exatamente igual ao valor retornado pela ferramenta Disponibilidade, sem alterações no formato.\nAntes de executar, confirme com o cliente o dia, horário e dados coletados.\nNunca use sem antes verificar disponibilidade pela ferramenta Disponibilidade.\nNunca use para reagendar ou cancelar.\n\nFERRAMENTA BUSCAR BOOKINGUID\nUse quando o cliente pedir para reagendar ou cancelar e você ainda não tiver o bookingUid.\nPreencha user_email com o e-mail do cliente.\nO retorno será uma lista de {{ $('Config Cal.com').item.json.profissional_servico }}s futuros.\nUse o uid do item correto retornado pela ferramenta nas ferramentas Reagendar ou Cancelar.\nSe houver mais de um {{ $('Config Cal.com').item.json.profissional_servico }} futuro, confirme com o cliente qual deseja alterar ou cancelar.\nNunca use esta ferramenta para criar agendamentos.\n\nFERRAMENTA REAGENDAR\nUse quando o cliente quiser mudar o dia ou horário de um {{ $('Config Cal.com').item.json.profissional_servico }} já marcado.\nPré-requisito: ter o bookingUid obtido pela ferramenta Buscar BookingUID.\nPré-requisito: ter o novo horário desejado confirmado pelo cliente.\nPreencha uid na URL.\nPreencha start com o novo horário em UTC ISO 8601.\nApós executar, confirme o novo horário ao cliente no fuso de Brasília.\n\nFERRAMENTA CANCELAR\nUse quando o cliente pedir explicitamente para cancelar um {{ $('Config Cal.com').item.json.profissional_servico }}.\nPré-requisito: ter o bookingUid obtido pela ferramenta Buscar BookingUID.\nAntes de executar, confirme com o cliente qual {{ $('Config Cal.com').item.json.profissional_servico }} será cancelado.\nApós executar, confirme que o cancelamento foi realizado com sucesso.\n\nREGRAS OBRIGATÓRIAS\nNunca crie, reagende ou cancele sem confirmação explícita do cliente.\nNunca invente horários disponíveis.\nUse sempre a ferramenta Disponibilidade para consultar horários.\nNunca apresente todos os horários disponíveis de uma vez.\nApresente somente 2 horários por vez, sendo preferencialmente 1 pela manhã e 1 pela tarde.\nSe o cliente não gostar dos horários sugeridos, ofereça mais 2 opções.\nNunca execute duas ações irreversíveis na mesma mensagem.\nSempre converta horários para UTC ao enviar para a API.\nSe o cliente solicitar um horário fora da disponibilidade, informe que aquele horário não está disponível e ofereça alternativas.\nSe alguma ferramenta retornar erro, informe o cliente de forma educada e oriente contato direto com {{ $('Config Cal.com').item.json.profissional_nome }} pelo e-mail {{ $('Config Cal.com').item.json.profissional_email }}.\nColete dados de forma conversacional.\nNunca peça dados que o cliente já informou.\nNunca faça mais de uma pergunta por vez.\n\nMEMÓRIA PERSISTENTE\nVocê pode ter histórico de conversas anteriores com este cliente.\nUse o contexto para evitar repetir perguntas já respondidas.\nSe o cliente já informou nome e e-mail antes, não peça novamente.\nNão fabrique interações passadas se não houver contexto."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -416
+      ],
+      "id": "0e53c693-c6e9-4b3b-bfcb-22a52efe1c94",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        48,
+        -192
+      ],
+      "id": "a5659277-c641-41b0-9845-80b33ced373d",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "mdVxM7Xoyxq8FRL1",
+          "name": "n8n_automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "25b5a0d7-ca6d-4885-9fa8-d8b1bbf484fc",
+              "name": "cal_api_key",
+              "value": "*******",
+              "type": "string"
+            },
+            {
+              "id": "07296075-6dad-43d7-a025-64994e0a9799",
+              "name": "cal_event_type_slots",
+              "value": "5970833",
+              "type": "string"
+            },
+            {
+              "id": "69d6c3a2-e247-43dc-8c17-6ef1a6da4f10",
+              "name": "cal_event_type_booking",
+              "value": "5970833",
+              "type": "string"
+            },
+            {
+              "id": "132a07bf-9b12-4088-bac7-26c523afae08",
+              "name": "cal_timezone",
+              "value": "Europe/Dublin",
+              "type": "string"
+            },
+            {
+              "id": "7795d08f-828d-49ea-8f0d-a99af61cf1bc",
+              "name": "cal_rescheduled_by",
+              "value": "*******",
+              "type": "string"
+            },
+            {
+              "id": "3e0291b3-8d4d-409f-986d-c27d1849a9db",
+              "name": "cal_api_version_slots",
+              "value": "2024-09-04",
+              "type": "string"
+            },
+            {
+              "id": "a744eeb9-a716-4c6a-ac00-fd7e5ef9dc47",
+              "name": "cal_api_version_booking",
+              "value": "2024-08-13",
+              "type": "string"
+            },
+            {
+              "id": "a659e4cc-9688-4378-bbe9-ac054f10fb9f",
+              "name": "profissional_nome",
+              "value": "*******",
+              "type": "string"
+            },
+            {
+              "id": "50951aa8-12b3-4611-a271-4b1ffacf2c77",
+              "name": "profissional_email",
+              "value": "*******",
+              "type": "string"
+            },
+            {
+              "id": "e6727f7d-235d-4413-97d4-15a36cc7c4e2",
+              "name": "profissional_nicho",
+              "value": "beautician",
+              "type": "string"
+            },
+            {
+              "id": "4eed4118-f159-4f81-af46-da79a9987332",
+              "name": "profissional_servico",
+              "value": "Beautician",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        -416
+      ],
+      "id": "0ff1e31b-b5d6-4525-bf9a-16e947512019",
+      "name": "Config Cal.com"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        -192
+      ],
+      "id": "03e7ce90-8412-43e1-af83-13c63380115f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "0lW9RxdNxsOorsgo",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Consulta os horários disponíveis entre duas datas para {{ $('Config Cal.com').item.json.profissional_nome }}, especialista em {{ $('Config Cal.com').item.json.profissional_nicho }}.\n\nUse esta ferramenta somente quando o cliente quiser consultar dias livres, horários disponíveis ou vagas para {{ $('Config Cal.com').item.json.profissional_servico }}.\n\nExemplos de pedidos do cliente:\n\n\"Quais horários você tem na semana que vem?\"\n\n\"Tem vaga amanhã?\"\n\n\"Quais horários estão disponíveis na sexta?\"\n\n\"Você tem algum horário livre à tarde?\"\n\nPreencha obrigatoriamente os parâmetros start e end com datas no formato YYYY-MM-DD.\n\nUse o fuso horário {{ $('Config Cal.com').item.json.cal_timezone }} para interpretar o período solicitado pelo cliente.\n\nA ferramenta retorna os horários disponíveis dentro do intervalo informado.\n\n  Se a resposta retornar vazia, significa que não há {{ $('Config Cal.com').item.json.profissional_servico }}s disponíveis no período solicitado.\n\nNesse caso, informe o cliente de forma educada e ofereça buscar outro período.\n\nUse a resposta apenas para informar horários livres ao cliente.\n\nNunca use esta ferramenta para criar agendamentos.\n\nNunca use esta ferramenta para reagendar agendamentos.\n\nNunca use esta ferramenta para cancelar agendamentos.\n\nNunca invente horários.\n\nInforme somente horários retornados por esta ferramenta.\n",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "start",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `ISO 8601 date (YYYY-MM-DD) representing the first day of the availability search window in the clinic timezone (America/Sao_Paulo). Infer it from the user request: if they mention a specific date, use that; if they say “today”, “tomorrow” or a weekday, convert it to the corect date. If no date is specified, default to today.`, 'string') }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', \"ISO 8601 date (YYYY-MM-DD) representing the last day of the availability search window in the clinic timezone (America/Sao_Paulo). If the user asks for a specific day, set this equal to `start`. If they ask for “this week”, “next days” or a similar range, set this to up to 7 days after `start`, choosing a reasonable end date based on the request.\", 'string') }}"
+            },
+            {
+              "name": "eventTypeId",
+              "value": "={{ $json.cal_event_type_slots }}"
+            },
+            {
+              "name": "timeZone",
+              "value": "={{ $json.cal_timezone }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.cal_api_key }}"
+            },
+            {
+              "name": "cal-api-version",
+              "value": "={{ $json.cal_api_version_slots }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        -192
+      ],
+      "id": "684804ad-bd03-430d-85b7-9c2ca4efea19",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Use esta ferramenta somente depois de já ter confirmado a disponibilidade com a ferramenta Disponibilidade e de ter todos os dados necessários do cliente: nome completo, e-mail, telefone e o horário escolhido.\nA LLM deve enviar o campo `start` em formato ISO 8601 UTC (por exemplo: 2025-12-18T18:00:00Z para 15h em São Paulo), junto com o eventTypeId configurado para os {{ $('Config Cal.com').item.json.profissional_servico }}s de {{ $('Config Cal.com').item.json.profissional_nome }} e os dados do cliente.\nO fuso horário do cliente é sempre {{ $('Config Cal.com').item.json.cal_timezone }}.\nNão use esta ferramenta para reagendar ou cancelar; nesses casos use as ferramentas específicas de reagendamento/cancelamento.",
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.cal_api_key }}"
+            },
+            {
+              "name": "cal-api-version",
+              "value": "={{ $json.cal_api_version_booking }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"start\": \"{{ $fromAI('start', '', 'string') }}\",\n    \"eventTypeId\": {{ $json.cal_event_type_slots }},\n    \"attendee\": {\n      \"name\": \"{{ $fromAI('name', '', 'string') }}\",\n      \"email\": \"{{ $fromAI('email', '', 'string') }}\",\n      \"timeZone\": \"{{ $json.cal_timezone }}\",\n      \"language\": \"en\",\n      \"phoneNumber\": \"{{ (() => { const raw = $fromAI('phone', 'Irish phone number. Return only the phone number.', 'string') || ''; let p = raw.replace(/[^0-9+]/g, ''); if (p.startsWith('00353')) p = '+353' + p.slice(5); if (p.startsWith('353')) p = '+353' + p.slice(3); if (p.startsWith('0')) p = '+353' + p.slice(1); if (!p.startsWith('+353')) p = '+353' + p; return p; })() }}\"\n    },\n    \"metadata\": {\n      \"origem\": \"Instagram\",\n      \"idLead\": \"{{ $fromAI('email', '', 'string') }}\"\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        -192
+      ],
+      "id": "014e0f4f-3cdf-4411-8966-8a0fcf4f591c",
+      "name": "Agendar"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Config Cal.com",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Cal.com": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "d82598dd-2342-40f3-b39a-de2b76181d50",
+  "activeVersionId": "d82598dd-2342-40f3-b39a-de2b76181d50",
+  "versionCounter": 190,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-10T15:21:28.432Z",
+      "createdAt": "2026-06-10T15:21:28.432Z",
+      "role": "workflow:owner",
+      "workflowId": "i71TmyzIQpim9mHu",
+      "projectId": "LqTgYNDxMXdKQKi9",
+      "project": {
+        "updatedAt": "2026-06-09T18:37:11.565Z",
+        "createdAt": "2026-06-09T17:55:45.525Z",
+        "id": "LqTgYNDxMXdKQKi9",
+        "name": "*******",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ac431e53-a735-4ca0-bb4d-0dd604e3264c"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version d82598dd",
+    "description": ""
+  }
+}
